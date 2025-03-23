@@ -1,0 +1,10 @@
+const LegalLink = styled.a`
+  font-size: 14px;
+  color: var(--gray-text);
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--primary-color);
+  }
+`;

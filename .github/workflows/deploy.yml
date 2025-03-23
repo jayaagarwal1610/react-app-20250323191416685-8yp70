@@ -1,0 +1,48 @@
+name: Deploy React App
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci || npm install
+        
+      - name: Update public path for GitHub Pages
+        run: |
+          if [ -f "package.json" ]; then
+            REPO_NAME=$(echo $GITHUB_REPOSITORY | sed 's/.*\///')
+            if [ -f ".env" ]; then
+              echo "PUBLIC_URL=/$REPO_NAME" >> .env
+            else
+              echo "PUBLIC_URL=/$REPO_NAME" > .env
+            fi
+            # Create or update homepage in package.json
+            npm pkg set homepage="https://$GITHUB_REPOSITORY_OWNER.github.io/$REPO_NAME/"
+          fi
+        
+      - name: Build project
+        run: npm run build
+        
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: build # The folder the action should deploy
+          branch: gh-pages # The branch the action should deploy to 
